@@ -4,6 +4,7 @@ use std::process::Command;
 
 use anyhow::Result;
 use regex::Regex;
+use structopt::clap::AppSettings::*;
 use structopt::StructOpt;
 
 #[derive(Debug)]
@@ -14,6 +15,7 @@ enum EncoderVersion {
 }
 
 #[derive(Debug, StructOpt)]
+#[structopt(global_setting(ColoredHelp))]
 struct Opt {
     /// Input Files
     #[structopt(name = "INPUT", required(true))]
