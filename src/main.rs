@@ -32,6 +32,14 @@ struct Opt {
     /// Descriptive tag
     #[structopt(long, short)]
     tag: String,
+    /// Print the stdout and stderr of the benchmark instead of suppressing it. This
+    /// will increase the time it takes for benchmarks to run, so it should only be
+    /// used for debugging purposes or when trying to benchmark output speed.
+    #[structopt(long)]
+    show_output: bool,
+    /// Perform exactly NUM runs for each command.
+    #[structopt(long, short, default_value = "2")]
+    runs: String,
 }
 
 fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
@@ -85,8 +93,14 @@ fn probe_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
 
 impl Opt {
     fn hyperfine(&self, cmd: &str, levels: (&str, &str), out_name: String) {
-        let mut child = Command::new("hyperfine")
-            .args(&["-r", "2"])
+        let mut hf = Command::new("hyperfine");
+
+        hf.arg("-r").arg(&self.runs);
+        if self.show_output {
+            hf.arg("--show-output");
+        }
+
+        let mut child = hf
             .args(&["-P", "ss", levels.0, levels.1])
             .arg(cmd)
             .arg("--export-csv")
