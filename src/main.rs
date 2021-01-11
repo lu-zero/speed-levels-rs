@@ -66,7 +66,7 @@ fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
 
 fn rav1e_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
     let out = Command::new(enc)
-        .arg("--help")
+        .arg("--version")
         .output()
         .expect("cannot run the encoder");
 
