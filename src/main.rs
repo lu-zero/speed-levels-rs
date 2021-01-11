@@ -26,7 +26,7 @@ struct Opt {
     #[structopt(long, short, default_value = "10")]
     limit: usize,
     /// Output directory for the encoded files
-    #[structopt(long, short, parse(from_os_str), default_value = "~/Encoded")]
+    #[structopt(long, short = "O", parse(from_os_str), default_value = "~/Encoded")]
     outdir: PathBuf,
     /// Specify the encoder paths
     #[structopt(long, short, required(true))]
@@ -43,7 +43,7 @@ struct Opt {
     #[structopt(long, short, default_value = "2")]
     runs: String,
     /// Filename of the aggregate spreadsheet
-    #[structopt(long, short = "O")]
+    #[structopt(long, short = "o")]
     outname: Option<PathBuf>,
 }
 
