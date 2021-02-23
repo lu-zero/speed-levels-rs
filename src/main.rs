@@ -106,15 +106,15 @@ impl Opt {
         }
         let csv_export = format!("{}.csv", out_name);
 
-        let mut child = hf
+        let child = hf
             .args(&["-P", "ss", levels.0, levels.1])
             .arg(cmd)
             .arg("--export-csv")
             .arg(&csv_export)
             .arg("--export-markdown")
-            .arg(&format!("{}.md", out_name))
-            .spawn()
-            .expect("hyperfine failed");
+            .arg(&format!("{}.md", out_name));
+
+        let mut child = child.spawn().expect("hyperfine failed");
 
         //        std::io::stdout().write_all(&output.stdout).unwrap();
         //        std::io::stderr().write_all(&output.stderr).unwrap();
@@ -209,6 +209,16 @@ impl Opt {
 
 fn main() -> Result<()> {
     let opt = Opt::from_args();
+
+    let outdir = if opt.outdir == Path::new("~/Encoded") {
+        let outdir = dirs_next::home_dir().expect("Cannot find $HOME");
+
+        outdir.join("Encoded")
+    } else {
+        opt.outdir.clone()
+    };
+
+    std::fs::create_dir_all(outdir)?;
 
     let mut wb = WorkBook::new();
     for input in &opt.infiles {
