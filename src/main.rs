@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::Result;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use spreadsheet_ods::{Sheet, Value, WorkBook};
 use structopt::clap::AppSettings::*;
 use structopt::StructOpt;
@@ -62,6 +62,27 @@ fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
                     .map(|ver| EncoderVersion::Aom(ver.as_str().to_owned()))
             })
     })
+}
+
+fn rav1e_y_option<P: AsRef<Path>>(enc: P) -> bool {
+    let out = Command::new(enc.as_ref())
+        .arg("--help")
+        .output()
+        .expect("cannot run the encoder");
+
+    std::str::from_utf8(&out.stdout)
+        .ok()
+        .and_then(|out| {
+            RegexBuilder::new(r"\s*-y")
+                .multi_line(true)
+                .build()
+                .ok()
+                .and_then(|re| {
+                    let v = re.is_match(out);
+                    Some(v)
+                })
+        })
+        .unwrap_or(false)
 }
 
 fn rav1e_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
@@ -175,7 +196,7 @@ impl Opt {
 
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
 
-        let overwrite = if !ver.starts_with("0.3") { "-y" } else { "" };
+        let overwrite = if rav1e_y_option(&enc) { "-y" } else { "" };
 
         let run = format!(
             "{} {} --threads 16 --tiles 16 -l {} -s {{ss}} -o {} {} {}",
