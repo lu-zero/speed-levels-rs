@@ -45,6 +45,9 @@ struct Opt {
     /// Filename of the aggregate spreadsheet
     #[structopt(long, short = "o")]
     outname: Option<PathBuf>,
+    /// Set the threadpool size
+    #[structopt(long, default_value = "16")]
+    threads: usize,
 }
 
 fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
@@ -183,8 +186,8 @@ impl Opt {
 
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
 
-        let run = format!("{} {} --tile-rows=2 --tile-columns=2 --cpu-used={{ss}} --threads=16 --limit={} -o {} {}",
-            runner, enc.as_ref().display(), self.limit, outfile.display(), infile.as_ref().display());
+        let run = format!("{} {} --tile-rows=2 --tile-columns=2 --cpu-used={{ss}} --threads={} --limit={} -o {} {}",
+            runner, enc.as_ref().display(), self.threads, self.limit, outfile.display(), infile.as_ref().display());
 
         self.hyperfine(&run, ("0", "8"), stats_file)
     }
@@ -197,9 +200,10 @@ impl Opt {
         let overwrite = if rav1e_y_option(&enc) { "-y" } else { "" };
 
         let run = format!(
-            "{} {} --threads 16 --tiles 16 -l {} -s {{ss}} -o {} {} {}",
+            "{} {} --tiles 16 --threads {} -l {} -s {{ss}} -o {} {} {}",
             runner,
             enc.as_ref().display(),
+            self.threads,
             self.limit,
             outfile.display(),
             infile.as_ref().display(),
@@ -214,9 +218,10 @@ impl Opt {
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
 
         let run = format!(
-            "{} {} --preset {{ss}} --tile-rows 2 --tile-columns 2 --lp 16 -n {} -b {} -i {}",
+            "{} {} --preset {{ss}} --tile-rows 2 --tile-columns 2 --lp {} -n {} -b {} -i {}",
             runner,
             enc.as_ref().display(),
+            self.threads,
             self.limit,
             outfile.display(),
             infile.as_ref().display(),
