@@ -4,10 +4,20 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::Result;
+use lazy_static::lazy_static;
+use platform_info::{PlatformInfo, Uname};
 use regex::{Regex, RegexBuilder};
 use spreadsheet_ods::{Sheet, Value, WorkBook};
 use structopt::clap::AppSettings::*;
 use structopt::StructOpt;
+
+lazy_static! {
+    static ref DEFAULT_TAG: String = {
+        let pi = PlatformInfo::new().unwrap();
+
+        format!("{}-{}", pi.nodename(), pi.machine())
+    };
+}
 
 #[derive(Debug)]
 enum EncoderVersion {
@@ -32,7 +42,7 @@ struct Opt {
     #[structopt(long, short, required(true))]
     encoders: Vec<PathBuf>,
     /// Descriptive tag
-    #[structopt(long, short)]
+    #[structopt(long, short, default_value = &DEFAULT_TAG)]
     tag: String,
     /// Print the stdout and stderr of the benchmark instead of suppressing it. This
     /// will increase the time it takes for benchmarks to run, so it should only be

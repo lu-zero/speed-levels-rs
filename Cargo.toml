@@ -16,4 +16,6 @@ regex = "1"
 csv = "1.1"
 spreadsheet-ods = "0.5"
 dirs-next = "2.0"
+lazy_static = "1.4"
+platform-info = "0.1"
 
