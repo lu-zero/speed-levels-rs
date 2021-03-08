@@ -179,8 +179,6 @@ impl Opt {
     }
 
     fn aom_command<P: AsRef<Path>>(&self, enc: P, infile: P, ver: &str) -> Result<Sheet> {
-        println!("{} {}", infile.as_ref().display(), ver);
-
         let (outfile, stats_file) = self.outfiles(&infile, ver, "aom");
 
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
