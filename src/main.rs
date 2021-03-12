@@ -105,9 +105,21 @@ fn rav1e_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
         .expect("cannot run the encoder");
 
     std::str::from_utf8(&out.stdout).ok().and_then(|out| {
-        Regex::new(r"rav1e (\S+) ").ok().and_then(|re| {
+        Regex::new(r"rav1e (\S+) \((\S+)\)").ok().and_then(|re| {
             re.captures(out)
-                .and_then(|caps| caps.get(1))
+                .and_then(|caps| {
+                    let nominal = caps.get(1);
+                    let specific = caps.get(2);
+                    if let (Some(nominal), Some(specific)) = (nominal, specific) {
+                        Some(if specific.as_str() == "UNKNOWN" {
+                            nominal
+                        } else {
+                            specific
+                        })
+                    } else {
+                        nominal
+                    }
+                })
                 .map(|ver| EncoderVersion::Rav1e(ver.as_str().to_owned()))
         })
     })
