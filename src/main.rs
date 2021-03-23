@@ -151,14 +151,18 @@ impl Opt {
             hf.arg("--show-output");
         }
         let csv_export = format!("{}.csv", out_name);
+        let json_export = format!("{}.json", out_name);
+        let md_export = format!("{}.md", out_name);
 
         let child = hf
             .args(&["-P", "ss", levels.0, levels.1])
             .arg(cmd)
+            .arg("--export-json")
+            .arg(&json_export)
             .arg("--export-csv")
             .arg(&csv_export)
             .arg("--export-markdown")
-            .arg(&format!("{}.md", out_name));
+            .arg(&md_export);
 
         let mut child = child.spawn().expect("hyperfine failed");
 
