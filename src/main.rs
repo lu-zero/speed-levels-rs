@@ -58,6 +58,15 @@ struct Opt {
     /// Set the threadpool size
     #[structopt(long, default_value = "16")]
     threads: usize,
+    /// Extra command for the aom instances
+    #[structopt(long, default_value = "", env = "EXTRA_AOM")]
+    extra_aom: String,
+    /// Extra command for the rav1e instances
+    #[structopt(long, default_value = "", env = "EXTRA_RAV1E")]
+    extra_rav1e: String,
+    /// Extra command for the svt-av1 instances
+    #[structopt(long, default_value = "", env = "EXTRA_SVT")]
+    extra_svt: String,
 }
 
 fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
@@ -212,8 +221,15 @@ impl Opt {
 
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
 
-        let run = format!("{} {} --tile-rows=2 --tile-columns=2 --cpu-used={{ss}} --threads={} --limit={} -o {} {}",
-            runner, enc.as_ref().display(), self.threads, self.limit, outfile.display(), infile.as_ref().display());
+        let run = format!("{} {} --tile-rows=2 --tile-columns=2 --cpu-used={{ss}} --threads={} --limit={} -o {} {} {}",
+            runner,
+            enc.as_ref().display(),
+            self.threads,
+            self.limit,
+            outfile.display(),
+            infile.as_ref().display(),
+            &self.extra_aom,
+        );
 
         self.hyperfine(&run, ("0", "8"), stats_file)
     }
@@ -226,14 +242,15 @@ impl Opt {
         let overwrite = if rav1e_y_option(&enc) { "-y" } else { "" };
 
         let run = format!(
-            "{} {} --tiles 16 --threads {} -l {} -s {{ss}} -o {} {} {}",
+            "{} {} --tiles 16 --threads {} -l {} -s {{ss}} -o {} {} {} {}",
             runner,
             enc.as_ref().display(),
             self.threads,
             self.limit,
             outfile.display(),
             infile.as_ref().display(),
-            overwrite
+            overwrite,
+            &self.extra_rav1e,
         );
 
         self.hyperfine(&run, ("0", "10"), stats_file)
@@ -244,13 +261,14 @@ impl Opt {
         let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
 
         let run = format!(
-            "{} {} --preset {{ss}} --tile-rows 2 --tile-columns 2 --lp {} -n {} -b {} -i {}",
+            "{} {} --preset {{ss}} --tile-rows 2 --tile-columns 2 --lp {} -n {} -b {} -i {} {}",
             runner,
             enc.as_ref().display(),
             self.threads,
             self.limit,
             outfile.display(),
             infile.as_ref().display(),
+            &self.extra_svt,
         );
 
         self.hyperfine(&run, ("0", "8"), stats_file)
