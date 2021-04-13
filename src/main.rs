@@ -67,6 +67,9 @@ struct Opt {
     /// Extra command for the svt-av1 instances
     #[structopt(long, default_value = "", env = "EXTRA_SVT")]
     extra_svt: String,
+    /// Use the provided runner to execute the encoder
+    #[structopt(long, default_value = "", env = "RUNNER_COMMAND")]
+    runner: String,
 }
 
 fn aom_version<P: AsRef<OsStr>>(enc: P) -> Option<EncoderVersion> {
@@ -219,10 +222,8 @@ impl Opt {
     fn aom_command<P: AsRef<Path>>(&self, enc: P, infile: P, ver: &str) -> Result<Sheet> {
         let (outfile, stats_file) = self.outfiles(&infile, ver, "aom");
 
-        let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
-
         let run = format!("{} {} --tile-rows=2 --tile-columns=2 --cpu-used={{ss}} --threads={} --limit={} -o {} {} {}",
-            runner,
+            self.runner,
             enc.as_ref().display(),
             self.threads,
             self.limit,
@@ -237,13 +238,11 @@ impl Opt {
     fn rav1e_command<P: AsRef<Path>>(&self, enc: P, infile: P, ver: &str) -> Result<Sheet> {
         let (outfile, stats_file) = self.outfiles(&infile, ver, "rav1e");
 
-        let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
-
         let overwrite = if rav1e_y_option(&enc) { "-y" } else { "" };
 
         let run = format!(
             "{} {} --tiles 16 --threads {} -l {} -s {{ss}} -o {} {} {} {}",
-            runner,
+            self.runner,
             enc.as_ref().display(),
             self.threads,
             self.limit,
@@ -258,11 +257,9 @@ impl Opt {
     fn svt_command<P: AsRef<Path>>(&self, enc: P, infile: P, ver: &str) -> Result<Sheet> {
         let (outfile, stats_file) = self.outfiles(&infile, ver, "svt");
 
-        let runner = std::env::var("RUNNER_COMMAND").unwrap_or_default();
-
         let run = format!(
             "{} {} --preset {{ss}} --tile-rows 2 --tile-columns 2 --lp {} -n {} -b {} -i {} {}",
-            runner,
+            self.runner,
             enc.as_ref().display(),
             self.threads,
             self.limit,
