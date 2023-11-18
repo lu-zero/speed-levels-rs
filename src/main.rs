@@ -5,6 +5,7 @@ use std::process::Command;
 
 use anyhow::Result;
 use clap::Parser;
+use icu_locid::locale;
 use platform_info::*;
 use regex::{Regex, RegexBuilder};
 use spreadsheet_ods::{Sheet, Value, WorkBook};
@@ -181,7 +182,7 @@ impl Opt {
         //        std::io::stderr().write_all(&output.stderr).unwrap();
         child.wait().expect("failed to wait on hyperfine");
 
-        let mut s = Sheet::new_with_name(&out_name);
+        let mut s = Sheet::new(&out_name);
         let f = File::open(&csv_export)?;
         // Save the header as well.
         let mut r = csv::ReaderBuilder::new().has_headers(false).from_reader(f);
@@ -284,7 +285,7 @@ fn main() -> Result<()> {
 
     std::fs::create_dir_all(outdir)?;
 
-    let mut wb = WorkBook::new();
+    let mut wb = WorkBook::new(locale!("en_US"));
     for input in &opt.infiles {
         for enc in &opt.encoders {
             use self::EncoderVersion::*;
@@ -298,7 +299,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(outname) = opt.outname {
-        spreadsheet_ods::write_ods(&wb, outname)?;
+        spreadsheet_ods::write_ods(&mut wb, outname)?;
     }
 
     Ok(())

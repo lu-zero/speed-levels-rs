@@ -14,9 +14,10 @@ anyhow = "1"
 regex = "1"
 csv = "1.1"
 serde_json = "1.0"
-spreadsheet-ods = "0.5"
+spreadsheet-ods = "0.19"
 dirs-next = "2.0"
 lazy_static = "1.4"
 platform-info = "2.0.2"
 clap = { version = "4.4.8", features = ["derive", "env", "wrap_help"] }
+icu_locid = "1.4.0"
 
