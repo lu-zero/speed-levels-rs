@@ -4,23 +4,19 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::Result;
-use lazy_static::lazy_static;
+use clap::Parser;
 use platform_info::*;
 use regex::{Regex, RegexBuilder};
 use spreadsheet_ods::{Sheet, Value, WorkBook};
-use structopt::clap::AppSettings::*;
-use structopt::StructOpt;
 
-lazy_static! {
-    static ref DEFAULT_TAG: String = {
-        let pi = PlatformInfo::new().unwrap();
+fn default_tag() -> String {
+    let pi = PlatformInfo::new().unwrap();
 
-        format!(
-            "{}-{}",
-            pi.nodename().to_string_lossy(),
-            pi.machine().to_string_lossy()
-        )
-    };
+    format!(
+        "{}-{}",
+        pi.nodename().to_string_lossy(),
+        pi.machine().to_string_lossy()
+    )
 }
 
 #[derive(Debug)]
@@ -30,49 +26,48 @@ enum EncoderVersion {
     Svt(String),
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(global_setting(ColoredHelp))]
+#[derive(Debug, Parser)]
 struct Opt {
     /// Input Files
-    #[structopt(name = "INPUT", required(true))]
+    #[arg(name = "INPUT", required(true))]
     infiles: Vec<PathBuf>,
     /// Number of frames to encode
-    #[structopt(long, short, default_value = "10")]
+    #[arg(long, short, default_value = "10")]
     limit: usize,
     /// Output directory for the encoded files
-    #[structopt(long, short = "O", parse(from_os_str), default_value = "~/Encoded")]
+    #[arg(long, short = 'O', default_value = "~/Encoded")]
     outdir: PathBuf,
     /// Specify the encoder paths
-    #[structopt(long, short, required(true))]
+    #[arg(long, short, required(true))]
     encoders: Vec<PathBuf>,
     /// Descriptive tag
-    #[structopt(long, short, default_value = &DEFAULT_TAG)]
+    #[arg(long, short, default_value_t = default_tag())]
     tag: String,
     /// Print the stdout and stderr of the benchmark instead of suppressing it. This
     /// will increase the time it takes for benchmarks to run, so it should only be
     /// used for debugging purposes or when trying to benchmark output speed.
-    #[structopt(long)]
+    #[arg(long)]
     show_output: bool,
     /// Perform exactly NUM runs for each command.
-    #[structopt(long, short, default_value = "2")]
+    #[arg(long, short, default_value = "2")]
     runs: String,
     /// Filename of the aggregate spreadsheet
-    #[structopt(long, short = "o")]
+    #[arg(long, short = 'o')]
     outname: Option<PathBuf>,
     /// Set the threadpool size
-    #[structopt(long, default_value = "16")]
+    #[arg(long, default_value = "16")]
     threads: usize,
     /// Extra command for the aom instances
-    #[structopt(long, default_value = "", env = "EXTRA_AOM")]
+    #[arg(long, default_value = "", env = "EXTRA_AOM")]
     extra_aom: String,
     /// Extra command for the rav1e instances
-    #[structopt(long, default_value = "", env = "EXTRA_RAV1E")]
+    #[arg(long, default_value = "", env = "EXTRA_RAV1E")]
     extra_rav1e: String,
     /// Extra command for the svt-av1 instances
-    #[structopt(long, default_value = "", env = "EXTRA_SVT")]
+    #[arg(long, default_value = "", env = "EXTRA_SVT")]
     extra_svt: String,
     /// Use the provided runner to execute the encoder
-    #[structopt(long, default_value = "", env = "RUNNER_COMMAND")]
+    #[arg(long, default_value = "", env = "RUNNER_COMMAND")]
     runner: String,
 }
 
@@ -277,7 +272,7 @@ impl Opt {
 }
 
 fn main() -> Result<()> {
-    let opt = Opt::from_args();
+    let opt = Opt::parse();
 
     let outdir = if opt.outdir == Path::new("~/Encoded") {
         let outdir = dirs_next::home_dir().expect("Cannot find $HOME");

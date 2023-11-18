@@ -10,7 +10,6 @@ description = "speed-level benchmark for AV1 encoders"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3"
 anyhow = "1"
 regex = "1"
 csv = "1.1"
@@ -19,4 +18,5 @@ spreadsheet-ods = "0.5"
 dirs-next = "2.0"
 lazy_static = "1.4"
 platform-info = "2.0.2"
+clap = { version = "4.4.8", features = ["derive", "env", "wrap_help"] }
 
