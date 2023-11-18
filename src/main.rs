@@ -5,7 +5,7 @@ use std::process::Command;
 
 use anyhow::Result;
 use lazy_static::lazy_static;
-use platform_info::{PlatformInfo, Uname};
+use platform_info::*;
 use regex::{Regex, RegexBuilder};
 use spreadsheet_ods::{Sheet, Value, WorkBook};
 use structopt::clap::AppSettings::*;
@@ -15,7 +15,11 @@ lazy_static! {
     static ref DEFAULT_TAG: String = {
         let pi = PlatformInfo::new().unwrap();
 
-        format!("{}-{}", pi.nodename(), pi.machine())
+        format!(
+            "{}-{}",
+            pi.nodename().to_string_lossy(),
+            pi.machine().to_string_lossy()
+        )
     };
 }
 
